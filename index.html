@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python → Nim — La Guía Definitiva Completa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;1,400&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d10;
+    --bg2: #14141a;
+    --bg3: #1a1a24;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8e6f0;
+    --muted: #7a7890;
+    --accent: #f0c040;
+    --py-col: #3b82f6;
+    --nim-col: #f97316;
+    --note-bg: rgba(124,106,240,0.1);
+    --note-border: rgba(124,106,240,0.35);
+    --warn-bg: rgba(249,115,22,0.08);
+    --warn-border: rgba(249,115,22,0.3);
+    --kw: #c084fc;
+    --st: #4ade80;
+    --cm: #6b7280;
+    --nm: #fb923c;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .layout { display: grid; grid-template-columns: 290px 1fr; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+  }
+
+  .sidebar-brand { padding: 2rem 1.5rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem; }
+  .sidebar-brand h1 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.2; }
+  .sidebar-brand h1 span { color: var(--accent); }
+  .sidebar-brand p { font-family: 'Syne', sans-serif; font-size: 11px; color: var(--muted); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .sidebar-progress { padding: 0.75rem 1.5rem 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; }
+  .sidebar-progress-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .sidebar-progress-label span:last-child { color: var(--accent); font-weight: 700; }
+  .sidebar-progress-track { height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .sidebar-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; width: 0%; }
+
+  /* Category headers in nav */
+  .nav-category {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.2);
+    padding: 10px 20px 4px;
+    margin-top: 4px;
+  }
+
+  .nav-section { padding: 0 0.75rem; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    transition: all 0.15s; margin-bottom: 1px; border: 1px solid transparent; background: transparent;
+    width: 100%; text-align: left; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 500;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-item.active { background: rgba(240,192,64,0.1); color: var(--accent); border-color: rgba(240,192,64,0.2); }
+  .nav-item .nav-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; min-width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center; border-radius: 4px;
+    background: rgba(255,255,255,0.06); color: var(--muted); flex-shrink: 0; transition: all 0.15s;
+  }
+  .nav-item.visited .nav-num { background: rgba(74,222,128,0.15); color: #4ade80; }
+  .nav-item.active .nav-num { background: rgba(240,192,64,0.2); color: var(--accent); }
+
+  .kbd-hint { margin-top: auto; padding: 1rem 1.5rem 0; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .kbd { display: inline-flex; align-items: center; justify-content: center; padding: 2px 6px; border: 1px solid var(--border2); border-radius: 4px; font-size: 11px; color: var(--muted); background: rgba(255,255,255,0.04); }
+
+  /* ── MAIN ── */
+  .main { padding: 3rem 4rem 4rem; max-width: 960px; }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .section-eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); line-height: 1.1; margin-bottom: 0.75rem; }
+  .section-desc { font-size: 15px; color: #9d9bb8; line-height: 1.75; font-style: italic; max-width: 640px; }
+  .section-desc code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 4px; color: var(--accent); font-style: normal; }
+
+  .pair-label { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin: 1.75rem 0 0.6rem; }
+
+  .code-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .code-col { background: var(--bg3); }
+  .code-col:first-child { border-right: 1px solid var(--border); }
+  .code-header { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  .code-header-left { display: flex; align-items: center; gap: 8px; }
+  .lang-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .py-dot { background: var(--py-col); }
+  .nim-dot { background: var(--nim-col); }
+  .lang-name { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  .py-name  { color: var(--py-col); }
+  .nim-name { color: var(--nim-col); }
+
+  .copy-btn { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border2); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .copy-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .copy-btn.copied { color: #4ade80; border-color: rgba(74,222,128,0.4); }
+
+  pre { padding: 1.1rem 1.4rem; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 1.7; overflow-x: auto; color: #c9c7e0; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+
+  .kw { color: var(--kw); } .st { color: var(--st); } .cm { color: var(--cm); font-style: italic; } .nm { color: var(--nm); }
+
+  .note, .warn { border-radius: 10px; padding: 12px 16px; font-size: 14px; line-height: 1.65; margin: 1.25rem 0; display: flex; gap: 12px; align-items: flex-start; }
+  .note { background: var(--note-bg); border: 1px solid var(--note-border); color: #a5a0f0; }
+  .warn { background: var(--warn-bg); border: 1px solid var(--warn-border); color: #fdba74; }
+  .note code, .warn code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; }
+
+  .nav-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); gap: 1rem; }
+  .nav-btn { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border2); background: transparent; color: var(--muted); white-space: nowrap; }
+  .nav-btn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  .nav-btn.primary { background: var(--accent); color: #0d0d10; border-color: var(--accent); }
+  .nav-btn.primary:hover { background: #f5d060; }
+
+  .footer-progress { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+  .footer-progress-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .footer-progress-track { width: 100%; max-width: 160px; height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .footer-progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+
+  .complete-banner { background: rgba(74,222,128,0.07); border: 1px solid rgba(74,222,128,0.22); border-radius: 12px; padding: 1.5rem 2rem; text-align: center; margin-top: 3rem; }
+  .complete-banner h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #4ade80; margin-bottom: 6px; }
+  .complete-banner p { font-size: 14px; color: #6ee7b7; font-style: italic; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+    .nav-section { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 1rem 1rem; }
+    .nav-item { width: auto; padding: 6px 10px; font-size: 12px; }
+    .nav-item .nav-num { display: none; }
+    .kbd-hint { display: none; }
+    .main { padding: 2rem 1.25rem; }
+    .section-title { font-size: 26px; }
+    .code-grid { grid-template-columns: 1fr; }
+    .code-col:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h1>Python <span>→</span> Nim</h1>
+      <p>La Guía Definitiva Completa</p>
+    </div>
+    <div class="sidebar-progress">
+      <div class="sidebar-progress-label"><span>Progreso</span><span id="progress-pct">0%</span></div>
+      <div class="sidebar-progress-track"><div class="sidebar-progress-fill" id="progress-fill"></div></div>
+    </div>
+    <nav class="nav-section" id="nav"></nav>
+    <div class="kbd-hint"><kbd class="kbd">←</kbd><kbd class="kbd">→</kbd> navegar</div>
+  </aside>
+
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+const sections = [
+  // ── FUNDAMENTOS ──
+  {
+    category: "Fundamentos",
+    title: "Mentalidad y Compilación",
+    desc: "Python es interpretado; Nim es compilado a C. Esto significa que el rendimiento es órdenes de magnitud mayor — obtienes velocidad de C con sintaxis parecida a Python.",
+    note: "Usa <code>nim c -r archivo.nim</code> para compilar y ejecutar al instante. Para producción: <code>nim c -d:release archivo.nim</code>. El resultado es un binario standalone.",
+    pairs: [
+      { label: "Hola Mundo",
+        py: `print("Hola, mundo!")
+print(f"2 + 2 = {2+2}")
+print("uno", "dos", "tres", sep=", ")`,
+        nim: `echo "Hola, mundo!"
+echo "2 + 2 = ", 2+2
+echo ["uno", "dos", "tres"].join(", ")` }
+    ]
+  },
+  {
+    title: "Style Insensitivity",
+    desc: "Nim es el único lenguaje que ignora guiones bajos y capitalización (excepto la primera letra). Esto elimina debates de estilo como <code>camelCase</code> vs <code>snake_case</code>.",
+    warn: "<code>mi_variable</code>, <code>miVariable</code> y <code>mivariable</code> son la misma entidad en Nim. Solo la primera letra distingue mayúsculas de minúsculas.",
+    pairs: [
+      { label: "Equivalencia de nombres",
+        py: `# En Python son 3 variables distintas
+mi_variable = 1
+miVariable = 2
+mivariable = 3`,
+        nim: `let mi_variable = 100
+echo miVariable   # 100 — misma variable
+echo mivariable   # 100 — misma variable` }
+    ]
+  },
+  {
+    title: "Variables y Mutabilidad",
+    desc: "Python tipifica dinámicamente y todo puede cambiar. Nim usa tipado estático con inferencia — el compilador deduce el tipo, pero te obliga a ser explícito sobre si el valor puede cambiar.",
+    note: "Usa <code>let</code> por defecto para evitar efectos secundarios. Solo usa <code>var</code> cuando realmente necesites mutar el valor.",
+    pairs: [
+      { label: "let, var y const",
+        py: `nombre = "Ana"       # mutable
+edad = 30            # mutable
+PI = 3.14159         # convención: mayúsculas`,
+        nim: `let nombre = "Ana"   # inmutable (como const en JS)
+var edad = 30        # mutable
+const PI = 3.14159   # evaluado en tiempo de compilación` },
+      { label: "Tipos explícitos opcionales",
+        py: `# Python (type hints opcionales)
+x: int = 42
+y: float = 3.14
+z: str = "texto"`,
+        nim: `# Nim (explícito o inferido)
+var x: int = 42
+var y: float = 3.14
+var z: string = "texto"` }
+    ]
+  },
+
+  // ── STRINGS ──
+  {
+    category: "Strings",
+    title: "Strings y Operaciones",
+    desc: "Los strings en Nim son mutables por defecto (a diferencia de Python). La concatenación usa <code>&</code>. Para interpolación, usa <code>fmt\"...\"</code> del módulo <code>strformat</code>.",
+    pairs: [
+      { label: "Operaciones básicas",
+        py: `s = "hola mundo"
+print(len(s))           # 10
+print(s.upper())        # HOLA MUNDO
+print(s[0:4])           # hola
+print("hola" + " " + "mundo")
+print(f"Tengo {30} años")`,
+        nim: `import std/[strformat, strutils]
+var s = "hola mundo"
+echo s.len              # 10
+echo s.toUpper()        # HOLA MUNDO
+echo s[0..3]            # hola
+echo "hola" & " " & "mundo"
+echo fmt"Tengo {30} años"` }
+    ]
+  },
+  {
+    title: "f-strings y Formato",
+    desc: "Los <code>f\"...\"</code> de Python tienen equivalente directo en Nim con <code>fmt\"...\"</code>. La sintaxis dentro de <code>{}</code> es casi idéntica.",
+    note: "Nim ofrece dos variantes: <code>fmt\"...\"</code> (no interpreta <code>\\n</code> como salto) y <code>&\"...\"</code> (sí interpreta escapes). Ambas soportan variables, expresiones y especificadores de formato.",
+    pairs: [
+      { label: "Interpolación básica",
+        py: `nombre = "Ana"
+edad = 30
+print(f"Hola, {nombre}!")
+print(f"Tienes {edad} años")
+print(f"El doble es {edad * 2}")`,
+        nim: `import std/strformat
+let nombre = "Ana"
+let edad = 30
+echo fmt"Hola, {nombre}!"
+echo fmt"Tienes {edad} años"
+echo fmt"El doble es {edad * 2}"` },
+      { label: "Formato numérico",
+        py: `pi = 3.14159265
+print(f"{pi:.2f}")      # 3.14
+print(f"{42:05d}")      # 00042
+print(f"{255:08b}")     # 11111111`,
+        nim: `import std/strformat
+let pi = 3.14159265
+echo fmt"{pi:.2f}"      # 3.14
+echo fmt"{42:05}"       # 00042
+echo fmt"{255:08b}"     # 11111111` },
+      { label: "Strings multilínea",
+        py: `nombre, edad, ciudad = "Ana", 30, "Madrid"
+ficha = f"""
+Nombre : {nombre}
+Edad   : {edad} años
+Ciudad : {ciudad}
+""".strip()
+print(ficha)`,
+        nim: `import std/strformat
+let nombre = "Ana"
+let edad = 30
+let ciudad = "Madrid"
+let ficha = fmt"""
+Nombre : {nombre}
+Edad   : {edad} años
+Ciudad : {ciudad}
+""".strip()
+echo ficha` }
+    ]
+  },
+
+  // ── CONTROL DE FLUJO ──
+  {
+    category: "Control de Flujo",
+    title: "Condicionales",
+    desc: "La sintaxis es muy similar a Python. Nim usa <code>elif</code> igual. La gran diferencia: el <code>if</code> es una expresión — puede retornar un valor directamente.",
+    pairs: [
+      { label: "if / elif / else",
+        py: `edad = 20
+if edad < 18:
+    print("menor")
+elif edad < 65:
+    print("adulto")
+else:
+    print("senior")
+
+# Ternario
+cat = "par" if edad % 2 == 0 else "impar"`,
+        nim: `var edad = 20
+if edad < 18:
+  echo "menor"
+elif edad < 65:
+  echo "adulto"
+else:
+  echo "senior"
+
+# if es expresión en Nim
+let cat = if edad mod 2 == 0: "par" else: "impar"` },
+      { label: "case / of (match en Python 3.10+)",
+        py: `# Python 3.10+
+match día:
+    case "lunes":
+        print("inicio de semana")
+    case "viernes":
+        print("fin de semana")
+    case _:
+        print("otro día")`,
+        nim: `case día
+of "lunes":
+  echo "inicio de semana"
+of "viernes":
+  echo "fin de semana"
+else:
+  echo "otro día"` }
+    ]
+  },
+  {
+    title: "Bucles",
+    desc: "Nim tiene <code>for</code> y <code>while</code> como Python. Los rangos con <code>..</code> son inclusivos en ambos extremos (a diferencia del <code>range()</code> de Python que excluye el final).",
+    pairs: [
+      { label: "for y while",
+        py: `for i in range(5):
+    print(i)        # 0,1,2,3,4
+
+for i in range(1, 10, 2):
+    print(i)        # 1,3,5,7,9
+
+n = 0
+while n < 3:
+    print(n)
+    n += 1`,
+        nim: `for i in 0..4:
+  echo i            # 0,1,2,3,4
+
+for i in countup(1, 9, 2):
+  echo i            # 1,3,5,7,9
+
+var n = 0
+while n < 3:
+  echo n
+  inc n             # o n += 1` },
+      { label: "Iterar colecciones",
+        py: `frutas = ["manzana", "pera", "uva"]
+for fruta in frutas:
+    print(fruta)
+
+for i, fruta in enumerate(frutas):
+    print(i, fruta)`,
+        nim: `let frutas = ["manzana", "pera", "uva"]
+for fruta in frutas:
+  echo fruta
+
+for i, fruta in frutas:
+  echo i, " ", fruta` }
+    ]
+  },
+
+  // ── FUNCIONES ──
+  {
+    category: "Funciones",
+    title: "Funciones y Procs",
+    desc: "Las funciones en Nim se declaran con <code>proc</code>. Los tipos de parámetros y retorno son obligatorios. <code>result</code> es una variable especial que contiene el valor de retorno.",
+    note: "<code>result</code> se inicializa automáticamente al valor por defecto del tipo de retorno. No necesitas declararlo — ya existe dentro del proc y evita tener que escribir <code>return</code>.",
+    pairs: [
+      { label: "Declarar procs",
+        py: `def saludar(nombre: str) -> str:
+    return f"Hola, {nombre}!"
+
+def sumar(a: int, b: int = 0) -> int:
+    return a + b
+
+print(saludar("Ana"))
+print(sumar(3, 4))`,
+        nim: `import std/strformat
+proc saludar(nombre: string): string =
+  fmt"Hola, {nombre}!"   # última expr = retorno
+
+proc sumar(a: int, b: int = 0): int =
+  result = a + b         # 'result' es la variable mágica
+
+echo saludar("Ana")
+echo sumar(3, 4)` },
+      { label: "Funciones de orden superior",
+        py: `nums = [1, 2, 3, 4, 5]
+dobles = list(map(lambda x: x*2, nums))
+pares  = list(filter(lambda x: x%2==0, nums))
+print(dobles)
+print(pares)`,
+        nim: `import std/sequtils
+let nums = @[1, 2, 3, 4, 5]
+let dobles = nums.map(proc(x: int): int = x * 2)
+let pares  = nums.filter(proc(x: int): bool = x mod 2 == 0)
+echo dobles
+echo pares` }
+    ]
+  },
+  {
+    title: "UFCS — Sintaxis Unificada",
+    desc: "La 'Sintaxis Unificada de Llamada a Funciones' permite llamar cualquier función como si fuera un método. Si la función recibe un tipo como primer argumento, puedes usar el punto.",
+    note: "Esto permite que <code>len(s)</code> se escriba como <code>s.len</code>, dándote lo mejor de ambos mundos: funciones libres Y sintaxis de método.",
+    pairs: [
+      { label: "Llamadas unificadas",
+        py: `s = "hola"
+print(len(s))
+print(s.upper())    # Solo si es método de str`,
+        nim: `let s = "hola"
+echo s.len          # len(s) — sintaxis de método
+echo len(s)         # también válido — sintaxis de función
+echo s.toUpper()    # toUpper(s)` }
+    ]
+  },
+  {
+    title: "Iteradores y Yield",
+    desc: "Nim tiene iteradores que funcionan como los generadores de Python pero son compilados — el compilador los transforma en código de bucle eficiente sin overhead de heap.",
+    pairs: [
+      { label: "Generadores vs iteradores",
+        py: `def cuenta(hasta: int):
+    for i in range(hasta):
+        yield i
+
+for n in cuenta(3):
+    print(n)`,
+        nim: `iterator cuenta(hasta: int): int =
+  for i in 0..<hasta:
+    yield i
+
+for n in cuenta(3):
+  echo n` },
+      { label: "Iteradores con estado",
+        py: `def fibonacci():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+gen = fibonacci()
+for _ in range(8):
+    print(next(gen))`,
+        nim: `iterator fibonacci(): int =
+  var a, b = 0, 1
+  while true:
+    yield a
+    (a, b) = (b, a + b)
+
+var count = 0
+for n in fibonacci():
+  echo n
+  inc count
+  if count == 8: break` }
+    ]
+  },
+
+  // ── COLECCIONES ──
+  {
+    category: "Colecciones",
+    title: "Listas / Secuencias",
+    desc: "Las listas de Python equivalen a <code>seq</code> (secuencias) en Nim. <code>@[]</code> crea una secuencia dinámica. A diferencia de Python, el tipo de los elementos es uniforme.",
+    pairs: [
+      { label: "Operaciones comunes",
+        py: `nums = [1, 2, 3]
+nums.append(4)
+nums.insert(0, 0)
+nums.pop()
+print(len(nums))    # 3
+print(3 in nums)    # True
+nums.sort()`,
+        nim: `var nums = @[1, 2, 3]
+nums.add(4)
+nums.insert(0, 0)
+discard nums.pop()
+echo nums.len       # 3
+echo 3 in nums      # true
+nums.sort()` },
+      { label: "List comprehension",
+        py: `cuadrados = [x**2 for x in range(10)]
+pares = [x for x in range(20) if x % 2 == 0]`,
+        nim: `import std/sequtils
+let cuadrados = (0..9).toSeq.map(proc(x: int): int = x * x)
+let pares = (0..19).toSeq.filter(proc(x: int): bool = x mod 2 == 0)` }
+    ]
+  },
+  {
+    title: "Diccionarios / Tables",
+    desc: "Los diccionarios de Python son <code>Table</code> en Nim. La sintaxis es diferente pero el concepto es idéntico. Se importan desde el módulo <code>std/tables</code>.",
+    warn: "En Nim, todos los valores del <code>Table</code> deben ser del mismo tipo. Para tipos mixtos, usa <code>JsonNode</code> o define un tipo <code>object</code> propio.",
+    pairs: [
+      { label: "Crear y usar Tables",
+        py: `persona = {"nombre": "Ana", "ciudad": "Madrid"}
+persona["edad"] = "30"
+print(persona.get("nombre", "N/A"))
+print("ciudad" in persona)
+
+for clave, valor in persona.items():
+    print(f"{clave}: {valor}")`,
+        nim: `import std/tables
+var persona = {"nombre": "Ana", "ciudad": "Madrid"}.toTable
+persona["edad"] = "30"
+echo persona.getOrDefault("nombre", "N/A")
+echo "ciudad" in persona
+
+for clave, valor in persona.pairs():
+  echo clave, ": ", valor` }
+    ]
+  },
+
+  // ── TIPOS Y OOP ──
+  {
+    category: "Tipos y OOP",
+    title: "Objetos: Valor vs Referencia",
+    desc: "Gran cambio: los objetos en Nim son 'tipos de valor' por defecto (se copian al asignar). Para que actúen como en Python (referencia), usamos <code>ref object</code>.",
+    warn: "Si usas <code>object</code> normal, no puede ser <code>nil</code>. Esto elimina los errores de <code>NoneType</code> de Python por diseño del lenguaje.",
+    pairs: [
+      { label: "object vs ref object",
+        py: `class User:
+    def __init__(self, name):
+        self.name = name
+
+u = User("Ana")
+u = None  # Ok en Python`,
+        nim: `type
+  User = ref object  # ref = comportamiento referencia
+    name: string
+
+let u: User = User(name: "Ana")
+let n: User = nil  # Solo posible con 'ref'` },
+      { label: "Métodos con UFCS",
+        py: `class Persona:
+    def __init__(self, nombre: str, edad: int):
+        self.nombre = nombre
+        self.edad = edad
+
+    def saludar(self) -> str:
+        return f"Hola, soy {self.nombre}"
+
+p = Persona("Ana", 30)
+print(p.saludar())`,
+        nim: `import std/strformat
+type
+  Persona = object
+    nombre: string
+    edad: int
+
+proc saludar(p: Persona): string =
+  fmt"Hola, soy {p.nombre}"
+
+proc \`$\`(p: Persona): string =
+  fmt"Persona({p.nombre}, {p.edad})"
+
+let p = Persona(nombre: "Ana", edad: 30)
+echo p.saludar()  # UFCS: saludar(p)` }
+    ]
+  },
+  {
+    title: "Herencia y Polimorfismo",
+    desc: "Nim soporta herencia con <code>ref object of</code>. El polimorfismo usa <code>method</code> con despacho dinámico. La herencia en Nim es más explícita que en Python.",
+    pairs: [
+      { label: "Herencia con method",
+        py: `class Animal:
+    def __init__(self, nombre):
+        self.nombre = nombre
+    def hablar(self):
+        return "..."
+
+class Perro(Animal):
+    def hablar(self):
+        return "Guau!"
+
+p = Perro("Rex")
+print(p.hablar())`,
+        nim: `type
+  Animal = ref object of RootObj
+    nombre: string
+  Perro = ref object of Animal
+  Gato  = ref object of Animal
+
+method hablar(a: Animal): string {.base.} = "..."
+method hablar(p: Perro): string = "Guau!"
+method hablar(g: Gato): string = "Miau!"
+
+let p = Perro(nombre: "Rex")
+echo p.hablar()` }
+    ]
+  },
+
+  // ── MANEJO DE ERRORES ──
+  {
+    category: "Errores y Recursos",
+    title: "Manejo de Errores",
+    desc: "Nim usa excepciones como Python. Se crean con <code>newException</code>. La gran diferencia: Nim tiene un sistema de efectos que puede verificar en compilación qué funciones pueden lanzar excepciones.",
+    pairs: [
+      { label: "try / except / finally",
+        py: `try:
+    x = int("abc")
+    resultado = 10 / 0
+except ValueError as e:
+    print(f"Error de valor: {e}")
+except ZeroDivisionError:
+    print("División por cero")
+finally:
+    print("siempre ejecuta")`,
+        nim: `try:
+  let x = parseInt("abc")
+  let r = 10 / 0
+except ValueError as e:
+  echo "Error de valor: ", e.msg
+except DivByZeroDefect:
+  echo "División por cero"
+finally:
+  echo "siempre ejecuta"` },
+      { label: "Lanzar excepciones",
+        py: `def validar(edad: int) -> int:
+    if edad < 0:
+        raise ValueError("Edad no puede ser negativa")
+    return edad
+
+try:
+    validar(-5)
+except ValueError as e:
+    print(e)`,
+        nim: `proc validar(edad: int): int =
+  if edad < 0:
+    raise newException(ValueError, "Edad no puede ser negativa")
+  result = edad
+
+try:
+  discard validar(-5)
+except ValueError as e:
+  echo e.msg` }
+    ]
+  },
+  {
+    title: "Gestión de Recursos (defer)",
+    desc: "En lugar del bloque <code>with</code>, Nim usa <code>defer</code> para garantizar que algo se ejecute al final del ámbito, sea cual sea el camino de salida.",
+    note: "<code>defer</code> es más flexible que <code>with</code> — funciona con cualquier código, no solo con context managers. Se ejecuta al salir del bloque actual.",
+    pairs: [
+      { label: "Context managers vs defer",
+        py: `with open("data.txt") as f:
+    data = f.read()
+    print(data)
+# f.close() se llama automáticamente`,
+        nim: `let f = open("data.txt")
+defer: f.close()        # Se ejecutará al final del ámbito
+let data = f.readAll()
+echo data` },
+      { label: "Múltiples defer (LIFO)",
+        py: `# Python: se necesitan varios with anidados
+with open("entrada.txt") as fin:
+    with open("salida.txt", "w") as fout:
+        fout.write(fin.read())`,
+        nim: `# Nim: defer se ejecuta en orden inverso (LIFO)
+let fin  = open("entrada.txt")
+defer: fin.close()          # se cierra 2do
+let fout = open("salida.txt", fmWrite)
+defer: fout.close()         # se cierra 1ro
+fout.write(fin.readAll())` }
+    ]
+  },
+
+  // ── DATOS ──
+  {
+    category: "Datos Externos",
+    title: "Manejo de JSON",
+    desc: "Consumir APIs es nativo con el módulo <code>std/json</code>. El operador <code>%*</code> crea estructuras JSON dinámicas de forma muy legible.",
+    note: "El operador <code>%*</code> convierte automáticamente literales de Nim a JSON. Es la forma más idiomática de construir JSON en Nim.",
+    pairs: [
+      { label: "Parsing",
+        py: `import json
+raw = '{"nombre": "Ana", "puntos": 10}'
+data = json.loads(raw)
+print(data["nombre"])
+print(data["puntos"])`,
+        nim: `import std/json
+let raw = """{"nombre": "Ana", "puntos": 10}"""
+let data = parseJson(raw)
+echo data["nombre"].getStr()
+echo data["puntos"].getInt()` },
+      { label: "Crear JSON",
+        py: `import json
+persona = {
+    "nombre": "Ana",
+    "edad": 30,
+    "activo": True
+}
+print(json.dumps(persona, indent=2))`,
+        nim: `import std/json
+let persona = %* {
+  "nombre": "Ana",
+  "edad": 30,
+  "activo": true
+}
+echo persona.pretty()` }
+    ]
+  },
+
+  // ── AVANZADO ──
+  {
+    category: "Avanzado",
+    title: "Módulos",
+    desc: "Nim organiza el código en módulos (archivos <code>.nim</code>). El asterisco <code>*</code> después de un nombre lo hace público — sin él, el símbolo es privado al módulo.",
+    note: "La biblioteca estándar de Nim está en <code>std/</code>. Puedes importar varios módulos a la vez con <code>import std/[math, strutils, sequtils]</code>.",
+    pairs: [
+      { label: "Importar módulos",
+        py: `import os
+from math import sqrt, pi
+from os.path import join, exists
+
+print(os.getcwd())
+print(sqrt(16))
+print(pi)`,
+        nim: `import std/[os, math]
+
+echo getCurrentDir()
+echo sqrt(16.0)
+echo PI` },
+      { label: "Crear un módulo propio",
+        py: `# mimodulo.py
+def saludar(nombre: str) -> str:
+    return f"Hola, {nombre}"
+
+VERSION = "1.0"
+
+# main.py
+from mimodulo import saludar, VERSION
+print(saludar("mundo"))`,
+        nim: `# mimodulo.nim
+proc saludar*(nombre: string): string =
+  "Hola, " & nombre   # * = exportado (público)
+
+const VERSION* = "1.0"
+
+# main.nim
+import mimodulo
+echo saludar("mundo")` }
+    ]
+  },
+  {
+    title: "Templates y Macros",
+    desc: "Una característica única de Nim. Los <code>template</code> son sustitución de código en compilación (como macros en C pero seguros y legibles). Las <code>macro</code> manipulan el AST directamente.",
+    warn: "Las macros son muy poderosas pero complejas. Para empezar, los <code>template</code> son suficientes y cubren la mayoría de los casos de uso habituales.",
+    pairs: [
+      { label: "Templates para código repetido",
+        py: `from contextlib import contextmanager
+import time
+
+@contextmanager
+def cronometrar():
+    inicio = time.time()
+    yield
+    elapsed = time.time() - inicio
+    print(f"Tiempo: {elapsed:.3f}s")
+
+with cronometrar():
+    total = sum(range(1_000_000))`,
+        nim: `import std/times
+
+template cronometrar(cuerpo: untyped) =
+  let inicio = now()
+  cuerpo                # el bloque se inserta aquí
+  echo "Tiempo: ", now() - inicio
+
+cronometrar:
+  var total = 0
+  for i in 0..999_999:
+    total += i` },
+      { label: "Swap con template",
+        py: `# Python: intercambio nativo con tuple
+a, b = b, a`,
+        nim: `template swap(a, b: untyped) =
+  let tmp = a
+  a = b
+  b = tmp
+
+var x = 1
+var y = 2
+swap(x, y)   # x=2, y=1` }
+    ]
+  },
+  {
+    title: "Nimble — Gestor de Paquetes",
+    desc: "Nimble es el gestor de paquetes de Nim (equivalente a pip). El archivo <code>.nimble</code> define el proyecto y sus dependencias, equivalente al <code>requirements.txt</code> o <code>pyproject.toml</code>.",
+    note: "Puedes buscar paquetes disponibles en <code>nimble.directory</code>. Algunos populares: <code>jester</code> (web), <code>norm</code> (ORM), <code>prologue</code> (framework web).",
+    pairs: [
+      { label: "Comandos básicos",
+        py: `# Instalar paquetes
+pip install requests
+pip install flask
+
+# Guardar dependencias
+pip freeze > requirements.txt
+
+# Instalar desde lista
+pip install -r requirements.txt`,
+        nim: `# Instalar paquetes
+nimble install jester
+nimble install prologue
+
+# El archivo .nimble define todo
+# (Ver siguiente ejemplo)` },
+      { label: "Archivo de proyecto",
+        py: `# pyproject.toml
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31"
+flask = "^3.0"`,
+        nim: `# miaplicacion.nimble
+version = "1.0.0"
+author = "Ana"
+description = "Mi app Nim"
+license = "MIT"
+
+requires "nim >= 2.0.0"
+requires "jester >= 0.6.0"` }
+    ]
+  },
+  {
+    title: "Trucos y Diferencias Clave",
+    desc: "Pequeños detalles que marcan la diferencia al venir de Python. Conocerlos de antemano te ahorrará horas de debugging.",
+    note: "En Nim, si una función devuelve algo y no lo usas, debes escribir <code>discard</code> explícitamente. Esto evita ignorar errores accidentalmente.",
+    pairs: [
+      { label: "discard — retornos no usados",
+        py: `# En Python ignoras retornos sin más
+def f(): return 42
+f()  # Ok, no pasa nada`,
+        nim: `proc f(): int = 42
+discard f()   # Obligatorio — no puedes ignorar retornos
+let x = f()  # O asignar el resultado` },
+      { label: "Rangos inclusivos",
+        py: `# range(5) = 0,1,2,3,4 (excluye 5)
+for i in range(5):
+    print(i)
+
+# range(1, 6) = 1,2,3,4,5
+for i in range(1, 6):
+    print(i)`,
+        nim: `# 0..4 = 0,1,2,3,4 (incluye 4)
+for i in 0..4:
+  echo i
+
+# 0..<5 = 0,1,2,3,4 (excluye 5)
+for i in 0..<5:
+  echo i` },
+      { label: "Paso de parámetros",
+        py: `# Python pasa por referencia (objetos)
+def duplicar(lista):
+    lista.append(lista[-1] * 2)
+
+nums = [1, 2, 3]
+duplicar(nums)
+print(nums)  # [1, 2, 3, 6]`,
+        nim: `# Nim: parámetros inmutables por defecto
+proc duplicar(lista: var seq[int]) =
+  lista.add(lista[^1] * 2)   # var = mutable
+
+var nums = @[1, 2, 3]
+duplicar(nums)
+echo nums  # @[1, 2, 3, 6]` }
+    ]
+  }
+];
+
+// ── STATE ──
+const navEl = document.getElementById('nav');
+const mainEl = document.getElementById('main');
+const progressFill = document.getElementById('progress-fill');
+const progressPct  = document.getElementById('progress-pct');
+let visited = new Set([0]);
+let current = 0;
+
+// ── HIGHLIGHT ──
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function highlight(code, lang) {
+  let s = esc(code);
+  const tokens = [];
+  function stash(span) { tokens.push(span); return `\x00T${tokens.length-1}\x00`; }
+
+  s = s.replace(/(#[^\n]*)/g, m => stash(`<span class="cm">${m}</span>`));
+  s = s.replace(/("(?:[^"\\\x00]|\\.)*"|'(?:[^'\\\x00]|\\.)*'|"""[\s\S]*?""")/g, m => stash(`<span class="st">${m}</span>`));
+
+  const pyKw  = /\b(def|class|if|elif|else|for|while|return|import|from|as|in|not|and|or|True|False|None|with|yield|raise|try|except|finally|match|case|lambda|print|next)\b/g;
+  const nimKw = /\b(proc|func|let|var|const|type|object|if|elif|else|for|while|result|return|import|from|in|of|case|echo|method|template|macro|iterator|discard|raise|try|except|finally|ref|nil|true|false|inc|dec|when|static|new|and|or|not|countup|countdown|toSeq|add|pop|sort|map|filter|join|strip|pretty|pairs|toTable|parseJson|getStr|getInt|open|close|readAll|write|now|break)\b/g;
+
+  s = s.replace(lang === 'py' ? pyKw : nimKw, m => stash(`<span class="kw">${m}</span>`));
+  s = s.replace(/\b(\d[\d_]*\.?\d*)\b/g, m => stash(`<span class="nm">${m}</span>`));
+  s = s.replace(/\x00T(\d+)\x00/g, (_, i) => tokens[+i]);
+  return s;
+}
+
+function callout(type, text) {
+  const icon = type === 'note' ? 'ℹ️' : '⚠️';
+  return `<div class="${type}"><span>${icon}</span><span>${text}</span></div>`;
+}
+
+function copyCode(id, btn) {
+  const pre = document.getElementById(id);
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.innerText || pre.textContent).then(() => {
+    btn.textContent = '✓ copiado';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copiar'; btn.classList.remove('copied'); }, 1800);
+  }).catch(() => { btn.textContent = 'error'; setTimeout(() => { btn.textContent = 'copiar'; }, 1800); });
+}
+
+function updateProgress() {
+  const pct = Math.round((visited.size / sections.length) * 100);
+  progressFill.style.width = pct + '%';
+  progressPct.textContent  = pct + '%';
+}
+
+function buildNav() {
+  navEl.innerHTML = '';
+  let lastCat = null;
+  sections.forEach((s, i) => {
+    if (s.category && s.category !== lastCat) {
+      const cat = document.createElement('div');
+      cat.className = 'nav-category';
+      cat.textContent = s.category;
+      navEl.appendChild(cat);
+      lastCat = s.category;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'nav-item' + (i === current ? ' active' : '') + (visited.has(i) ? ' visited' : '');
+    btn.innerHTML = `<span class="nav-num">${visited.has(i) ? '✓' : i+1}</span>${s.title}`;
+    btn.onclick = () => showSection(i);
+    navEl.appendChild(btn);
+  });
+}
+
+function buildSections() {
+  sections.forEach((s, i) => {
+    const sec = document.createElement('div');
+    sec.className = 'section' + (i === 0 ? ' active' : '');
+    sec.id = 'sec-' + i;
+
+    const pct = Math.round(((i + 1) / sections.length) * 100);
+    const isLast = i === sections.length - 1;
+
+    let html = `
+      <div class="section-header">
+        <div class="section-eyebrow">Tema ${i + 1} de ${sections.length}</div>
+        <h2 class="section-title">${s.title}</h2>
+        <p class="section-desc">${s.desc}</p>
+      </div>`;
+
+    s.pairs.forEach((p, pi) => {
+      const pyId  = `py-${i}-${pi}`;
+      const nimId = `nim-${i}-${pi}`;
+      html += `
+        <div class="pair-label">${p.label}</div>
+        <div class="code-grid">
+          <div class="code-col">
+            <div class="code-header">
+              <div class="code-header-left">
+                <span class="lang-dot py-dot"></span>
+                <span class="lang-name py-name">Python</span>
+              </div>
+              <button class="copy-btn" onclick="copyCode('${pyId}',this)">copiar</button>
+            </div>
+            <pre id="${pyId}">${highlight(p.py, 'py')}</pre>
+          </div>
+          <div class="code-col">
+            <div class="code-header">
+              <div class="code-header-left">
+                <span class="lang-dot nim-dot"></span>
+                <span class="lang-name nim-name">Nim</span>
+              </div>
+              <button class="copy-btn" onclick="copyCode('${nimId}',this)">copiar</button>
+            </div>
+            <pre id="${nimId}">${highlight(p.nim, 'nim')}</pre>
+          </div>
+        </div>`;
+    });
+
+    if (s.note) html += callout('note', s.note);
+    if (s.warn) html += callout('warn', s.warn);
+
+    html += `
+      <div class="nav-footer">
+        ${i > 0 ? `<button class="nav-btn" onclick="showSection(${i-1})">← ${sections[i-1].title}</button>` : '<span></span>'}
+        <div class="footer-progress">
+          <div class="footer-progress-label">${i + 1} / ${sections.length}</div>
+          <div class="footer-progress-track"><div class="footer-progress-fill" style="width:${pct}%"></div></div>
+        </div>
+        ${!isLast ? `<button class="nav-btn primary" onclick="showSection(${i+1})">${sections[i+1].title} →</button>` : '<span></span>'}
+      </div>`;
+
+    if (isLast) {
+      html += `<div class="complete-banner">
+        <h2>🎉 ¡Tutorial completo!</h2>
+        <p>Ya conoces los conceptos esenciales para programar en Nim siendo un pythonista. ¡A compilar!</p>
+      </div>`;
+    }
+
+    sec.innerHTML = html;
+    mainEl.appendChild(sec);
+  });
+}
+
+function showSection(i) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + i).classList.add('active');
+  visited.add(i);
+  current = i;
+  buildNav();
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' && current < sections.length - 1) showSection(current + 1);
+  if (e.key === 'ArrowLeft'  && current > 0)                   showSection(current - 1);
+});
+
+buildSections();
+buildNav();
+updateProgress();
+</script>
+</body>
+</html>
